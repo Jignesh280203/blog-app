@@ -43,7 +43,6 @@
 
     <script>
         async function loadPost() {
-            // Get slug from query string: reader.html?slug=my-post
             const params = new URLSearchParams(window.location.search);
             const slug = params.get('slug');
 
@@ -54,17 +53,18 @@
 
             try {
                 const res = await fetch(`/api/posts/${slug}`);
-                if (res.status === 404) {
+                const data = await res.json();
+
+                if (res.status === 404 || !data.success || !data.post) {
                     document.getElementById('postContainer').innerHTML = "<h1>Post not found</h1>";
                     return;
                 }
-                const post = await res.json();
 
                 document.getElementById('postContainer').innerHTML = `
-          <img src="${post.image || 'https://via.placeholder.com/600x300'}" alt="Post Image">
-          <h1>${post.title}</h1>
-          <p>${post.description}</p>
-        `;
+              <img src="${data.post.image || 'https://via.placeholder.com/600x300'}" alt="Post Image">
+              <h1>${data.post.title}</h1>
+              <p>${data.post.description}</p>
+            `;
             } catch (err) {
                 document.getElementById('postContainer').innerHTML = "<h1>Error loading post</h1>";
             }
