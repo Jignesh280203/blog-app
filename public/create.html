@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Create Blog Post</title>
+    <style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f4ff, #e6f7ff);
+    margin: 0;
+    padding: 40px;
+}
+
+.container {
+    max-width: 700px;
+    margin: auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+input,
+textarea {
+    padding: 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+input:focus,
+textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+button {
+    padding: 14px;
+    background: #007bff;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
+
+#result {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+    </style>
+</head>
+
+<body>
+    <h2>Create Blog Post</h2>
+    <form id="postForm">
+        <input type="text" id="title" placeholder="Post Title" required />
+        <input type="text" id="image" placeholder="Image URL" />
+        <textarea id="description" placeholder="Description" rows="5" required></textarea>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        const form = document.getElementById('postForm');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                title: document.getElementById('title').value,
+                image: document.getElementById('image').value,
+                description: document.getElementById('description').value
+            };
+
+            const button = form.querySelector('button');
+            button.disabled = true;
+            button.textContent = 'Publishing...';
+
+            try {
+                const res = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+              <p style="color:green;font-weight:bold;">
+                 Post published successfully!
+              </p>
+              <p>Your reader URL: 
+                <code>http://localhost:3000/reader.html?slug=${data.post.slug}</code>
+              </p>
+            `;
+                } else {
+                    resultDiv.innerHTML = `
+              <p style="color:red;font-weight:bold;">
+                 Error: ${data.message}
+              </p>
+            `;
+                }
+            } catch (err) {
+                resultDiv.textContent = 'Error publishing post';
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Publish Post';
+            }
+        });
+    </script>
+
+</body>
+
+</html>
